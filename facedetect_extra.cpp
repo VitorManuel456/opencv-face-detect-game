@@ -17,6 +17,9 @@ void drawImage(Mat frame, Mat img, int xPos, int yPos);
 void drawTransRect(Mat frame, Scalar color, double alpha, Rect region);
 bool checkCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
 
+
+string inputText = "";
+
 // Estrutura para representar objetos que caem
 struct FallingObject {
     int x;         // Posição no eixo X
@@ -29,6 +32,48 @@ vector<FallingObject> fallingObjects; // Lista de objetos que caem
 string cascadeName;
 string wName = "Falling Objects Game";
 
+// Função para desenhar a caixa de texto
+void drawTextBox(Mat& img) {
+    // Desenhar a caixa de texto (borda)
+    rectangle(img, Point(160, 200), Point(450, 250), Scalar(0, 0, 0), 2);
+    putText(img, "DIGITE O SEU NOME", Point(160, 190), FONT_HERSHEY_SIMPLEX, 0.7, Scalar(255, 255, 255), 2);
+    // Colocar o texto dentro da caixa
+    putText(img, inputText, Point(170, 235), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+    rectangle(img, Point(220, 260), Point(400, 300), Scalar(0, 0, 255), FILLED); // -1 ou FILLED para preencher
+    putText(img, "ENTER", Point(260, 290), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 0), 2);
+}
+
+void drawStringTextBox(Mat& img) {
+    while (true) {
+        int key = waitKey(0);  // Aguarda a entrada de uma tecla
+
+        // Se pressionar a tecla ESC, sai do loop
+        if (key == 27) {
+            continue;
+        }
+        // Se pressionar a tecla ENTER, sai do loop
+        else if (key == 13) {
+            break;
+        }
+        // Se pressionar a tecla BACKSPACE, remove o último caractere
+        else if (key == 8 && !inputText.empty()) {
+            inputText.pop_back();  // Remove o último caractere
+        }
+        // Caso contrário, adicione o caractere digitado ao texto
+        else if (key >= 32 && key <= 126) {  // Apenas caracteres imprimíveis
+            inputText += (char)key;
+        }
+
+        // Limpa a imagem e desenha a nova caixa de texto
+        Mat img = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+        resize(img, img, Size(640, 480));
+        drawTextBox(img);
+
+        // Atualiza a janela com o novo texto
+        imshow(wName, img);
+    }
+}
+
 int main(int argc, const char** argv) {
     VideoCapture capture;
     Mat frame;
@@ -40,6 +85,10 @@ int main(int argc, const char** argv) {
     cascadeName = "haarcascade_frontalface_default.xml";
     scale = 1; // usar 1, 2, 4.
     tryflip = true;
+    Mat img = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+    drawTextBox(img);
+    imshow(wName, img);
+    drawStringTextBox(img);
 
     // Carrega o classificador
     if (!cascade.load(cascadeName)) {
