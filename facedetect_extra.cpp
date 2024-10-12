@@ -7,7 +7,7 @@
     #include <random>
     #include <iomanip>
     #include <chrono>
-    #include <SFML/Audio.hpp>
+    //#include <SFML/Audio.hpp>
     #include <thread>
 
     using namespace std;
@@ -18,7 +18,7 @@
     void drawImage(Mat frame, Mat img, int xPos, int yPos);
     void drawTransRect(Mat frame, Scalar color, double alpha, Rect region);
     bool checkCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
-    void playMusic();
+    //void playMusic();
 
     string inputText = "";
 
@@ -86,7 +86,7 @@
         char key = 0;
 
          // Iniciar a thread para tocar música
-        std::thread musicThread(playMusic);
+        //std::thread musicThread(playMusic);
 
         // Defina um máximo de objetos 'm.png'
         const int maxMObjects = 2; // Máximo de objetos 'm.png' na tela
@@ -122,6 +122,8 @@
             cout << "ERROR: Could not load image: cadeira.png" << endl;
             return -1;
         }
+        //Executa a musica
+        system("mplayer musicadojogo.ogg &");
 
         // Inicializa a imagem m.png
         Mat mImage = imread("m.png", IMREAD_UNCHANGED); // Carrega a imagem m.png
@@ -268,8 +270,7 @@
 
                     // Desenhar a mensagem sobre a imagem do Datena
                     putText(frame, "CADEIRADA DO DATENA", Point(150, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); // Mensagem
-
-                    imshow(wName, frame);
+                    
                     waitKey(3000); // Espera 3 segundos para mostrar a mensagem
                     return 0; // Encerra o programa
                 }
@@ -312,7 +313,7 @@
                 }
 
                 // Finaliza a thread de música antes de sair
-                musicThread.join();
+                //musicThread.join();
 
                 return 0;
     }
@@ -341,7 +342,7 @@
         }
     }
 
-    void playMusic() {
+    /*void playMusic() {
     // Carregar a música
     sf::Music music;
     if (!music.openFromFile("musicadojogo.ogg")) {
@@ -355,7 +356,7 @@
     while (music.getStatus() == sf::Music::Playing) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Espera para não sobrecarregar a CPU
     }
-    }
+    }*/
 
     // Função de detecção de faces
     void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryflip, int& faceX) {
