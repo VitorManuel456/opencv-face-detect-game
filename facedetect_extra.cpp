@@ -7,6 +7,8 @@
     #include <random>
     #include <iomanip>
     #include <chrono>
+    #include <SFML/Audio.hpp>
+    #include <thread>
 
     using namespace std;
     using namespace cv;
@@ -16,7 +18,7 @@
     void drawImage(Mat frame, Mat img, int xPos, int yPos);
     void drawTransRect(Mat frame, Scalar color, double alpha, Rect region);
     bool checkCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
-
+    void playMusic();
 
     string inputText = "";
 
@@ -82,6 +84,9 @@
         CascadeClassifier cascade;
         double scale;
         char key = 0;
+
+         // Iniciar a thread para tocar música
+        std::thread musicThread(playMusic);
 
         // Defina um máximo de objetos 'm.png'
         const int maxMObjects = 2; // Máximo de objetos 'm.png' na tela
@@ -285,16 +290,31 @@
                     imshow(wName, frame);
                     waitKey(3000); // Espera 3 segundos para mostrar a mensagem
                     return 0; // Encerra o programa
-                }
             }
+                }
 
             // Mostra o frame na tela
             imshow(wName, frame);
 
             key = (char)waitKey(10);
             if (key == 27 || key == 'q') break; // Sai do loop se pressionar ESC ou 'q'
-        }
-        return 0;
+            }
+            // Seu código OpenCV aqui
+            cv::Mat image = cv::imread("caminho/para/sua/imagem.jpg");
+            if (image.empty()) {
+                std::cerr << "Imagem não encontrada!" << std::endl;
+                return -1;
+            }
+
+            while (true) {
+                cv::imshow("Janela", image);
+                if (cv::waitKey(30) >= 0) break; // Sai ao pressionar qualquer tecla
+                }
+
+                // Finaliza a thread de música antes de sair
+                musicThread.join();
+
+                return 0;
     }
 
     // Função para desenhar a imagem sobre o frame
@@ -319,6 +339,22 @@
                 img.copyTo(frame(Rect(xPos, yPos, img.cols, img.rows))); // Se não houver canal alfa
             }
         }
+    }
+
+    void playMusic() {
+    // Carregar a música
+    sf::Music music;
+    if (!music.openFromFile("musicadojogo.ogg")) {
+        std::cerr << "Não foi possível carregar a música!" << std::endl;
+        return;
+    }
+    music.setVolume(50); // Ajusta o volume (0-100)
+    music.play(); // Inicia a música
+
+    // Manter a thread viva enquanto a música toca
+    while (music.getStatus() == sf::Music::Playing) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Espera para não sobrecarregar a CPU
+    }
     }
 
     // Função de detecção de faces
