@@ -29,6 +29,7 @@ struct FallingObject {
 };
 
 vector<FallingObject> fallingObjects; // Lista de objetos que caem
+vector<FallingObject> fallingObjectsM; // Vetor para objetos m.png
 string cascadeName;
 string wName = "Falling Objects Game";
 
@@ -36,10 +37,10 @@ string wName = "Falling Objects Game";
 void drawTextBox(Mat& img) {
     // Desenhar a caixa de texto (borda)
     rectangle(img, Point(160, 200), Point(450, 250), Scalar(0, 0, 0), 2);
-    putText(img, "DIGITE O SEU NOME", Point(160, 190), FONT_HERSHEY_SIMPLEX, 0.7, Scalar(255, 255, 255), 2);
+    putText(img, "DIGITE O SEU NOME", Point(200, 190), FONT_HERSHEY_SIMPLEX, 0.7, Scalar(255, 255, 255), 2);
     // Colocar o texto dentro da caixa
-    putText(img, inputText, Point(170, 235), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
-    rectangle(img, Point(220, 260), Point(400, 300), Scalar(0, 0, 255), FILLED); // -1 ou FILLED para preencher
+    putText(img, inputText, Point(250, 235), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+    rectangle(img, Point(220, 260), Point(400, 300), Scalar(255, 0, 150), FILLED); // -1 ou FILLED para preencher
     putText(img, "ENTER", Point(260, 290), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 0), 2);
 }
 
@@ -111,11 +112,24 @@ int main(int argc, const char** argv) {
         return -1;
     }
 
+    // Inicializa a imagem m.png
+    Mat mImage = imread("m.png", IMREAD_UNCHANGED); // Carrega a imagem m.png
+    if (mImage.empty()) {
+        cout << "ERROR: Could not load image: m.png" << endl;
+        return -1;
+    }
+
     // Redimensiona a imagem do objeto para caber na tela
     double aspectRatio = static_cast<double>(objectImage.cols) / objectImage.rows;
-    int newWidth = min(objectImage.cols, 100); // Largura máxima de 100 pixels
+    int newWidth = min(objectImage.cols, 50); // Largura máxima de 50 pixels
     int newHeight = static_cast<int>(newWidth / aspectRatio); // Mantém a proporção
     resize(objectImage, objectImage, Size(newWidth, newHeight));
+
+    // Redimensiona a imagem 'm.png' para caber na tela
+    double aspectRatioM = static_cast<double>(mImage.cols) / mImage.rows;
+    int newWidthM = min(mImage.cols, 50); // Largura máxima de 50 pixels
+    int newHeightM = static_cast<int>(newWidthM / aspectRatioM); // Mantém a proporção
+    resize(mImage, mImage, Size(newWidthM, newHeightM));
 
     // Inicializa a contagem regressiva
     int countdownTime = 60; // 60 segundos
@@ -135,7 +149,7 @@ int main(int argc, const char** argv) {
     }
 
     // Redimensiona a imagem para caber na tela
-    resize(pabloImage, pabloImage, Size(100, 100)); // Ajuste o tamanho conforme necessário
+    resize(pabloImage, pabloImage, Size(50, 100)); // Ajuste o tamanho conforme necessário
 
     // Inicializa a imagem do Datena
     Mat datenaImage = imread("datena.jpg", IMREAD_UNCHANGED); // Carrega a imagem do Datena
@@ -173,6 +187,16 @@ int main(int argc, const char** argv) {
             lastCreationTime = currentTime; // Atualiza o tempo da última criação
         }
 
+        // Verifica se deve criar um novo 'm.png'
+        if (elapsedTime.count() >= tempoEntreCadeiras / 1000.0) {
+            FallingObject objM;
+            objM.x = rand() % (640 - mImage.cols); // Posição X aleatória
+            objM.y = 0; // Posição Y fixa em 0
+            objM.speed = rand() % 5 + 2; // Velocidade aleatória
+            objM.image = mImage.clone();
+            fallingObjectsM.push_back(objM); // Adiciona o objeto 'm.png'
+        }
+
         // Atualiza e desenha cada objeto que cai
         for (auto& obj : fallingObjects) {
             obj.y += obj.speed; // Move o objeto para baixo
@@ -182,6 +206,17 @@ int main(int argc, const char** argv) {
                 obj.speed = rand() % 5 + 2; // Nova velocidade
             }
             drawImage(frame, obj.image, obj.x, obj.y);
+        }
+
+        // Atualiza e desenha cada objeto 'm.png'
+        for (auto& objM : fallingObjectsM) {
+            objM.y += objM.speed; // Move o objeto para baixo
+            if (objM.y > frame.rows) { // Reinicia o objeto se sair da tela
+                objM.x = rand() % (640 - objM.image.cols); // Nova posição X aleatória
+                objM.y = 0; // Mantém a posição Y em 0
+                objM.speed = rand() % 5 + 2; // Nova velocidade
+            }
+            drawImage(frame, objM.image, objM.x, objM.y); // Desenha o objeto na tela
         }
 
         // Atualiza a contagem regressiva
@@ -203,10 +238,6 @@ int main(int argc, const char** argv) {
         string timerText = format("Tempo: %02d:%02d", minutes, seconds);
         putText(frame, timerText, Point(10, 30), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2); // Desenha o cronômetro
 
-        // Exibe a quantidade de objetos na tela
-        string objectCountText = format("Objetos: %zu", fallingObjects.size());
-        putText(frame, objectCountText, Point(10, 70), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2); // Desenha a contagem
-
         // Chama a função de detecção e desenho, passando a posição X do rosto
         detectAndDraw(frame, cascade, scale, tryflip, faceX);
 
@@ -224,6 +255,24 @@ int main(int argc, const char** argv) {
                 drawImage(frame, datenaImage, datenaX, datenaY); // Desenha a imagem do Datena
 
                 // Desenhar a mensagem sobre a imagem do Datena
+                putText(frame, "CADEIRADA DO DATENA", Point(150, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); // Mensagem
+
+                imshow(wName, frame);
+                waitKey(3000); // Espera 3 segundos para mostrar a mensagem
+                return 0; // Encerra o programa
+            }
+        }
+
+        // Verifica colisão entre o Pablo Marçal e os objetos 'm.png'
+        for (const auto& objM : fallingObjectsM) {
+            if (checkCollision(faceX - pabloImage.cols / 2, pabloY, pabloImage.cols, pabloImage.rows, 
+                            objM.x, objM.y, objM.image.cols, objM.image.rows)) {
+                // Ação de colisão com 'm.png'
+                int datenaX = (frame.cols - datenaImage.cols) / 2; // Centraliza a imagem do Datena na tela
+                int datenaY = 350; // Ajuste a posição Y conforme necessário
+                drawImage(frame, datenaImage, datenaX, datenaY); // Desenha a imagem do Datena
+
+                // Desenhar a mensagem sobre a imagem do Datena
                 putText(frame, "CADEIRADA DO DATENA", Point(170, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); // Mensagem
 
                 imshow(wName, frame);
@@ -231,6 +280,7 @@ int main(int argc, const char** argv) {
                 return 0; // Encerra o programa
             }
         }
+
         // Mostra o frame na tela
         imshow(wName, frame);
 
@@ -277,6 +327,11 @@ void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryf
 
     for (const auto& r : faces) {
         faceX = cvRound(r.x * scale + r.width * 0.5); // Atualiza a posição X do rosto
+
+        // Desenhar um retângulo ao redor da face
+        Rect faceRect(cvRound(r.x * scale), cvRound(r.y * scale), 
+                    cvRound(r.width * scale), cvRound(r.height * scale));
+        rectangle(img, faceRect, Scalar(255, 0, 150), 3);  // Cor roxa (BGR: 255, 0, 150) e espessura 3
     }
 }
 
