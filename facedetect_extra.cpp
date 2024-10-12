@@ -370,6 +370,10 @@
         cascade.detectMultiScale(gray, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
 
         for (const auto& r : faces) {
+            int areaFace = r.width * r.height; // Calcula a área da face
+            if (areaFace < 4000){
+                continue; // Impede que faces pequenas (mais distantes da tela) sejam detectadas para não poluir o jogo
+            }
             faceX = cvRound(r.x * scale + r.width * 0.5); // Atualiza a posição X do rosto
 
             // Desenhar um retângulo ao redor da face
