@@ -77,6 +77,17 @@
         }
     }
 
+    void drawScore(Mat& img, int score) {
+    Point text(10, 30);
+    putText(img, "Pontuação: ", text, FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 255), 2, LINE_AA);
+
+    std::string scoreText = std::to_string(score);
+        
+    Point number(10, 60);
+    putText(img, scoreText, number, FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 255), 2, LINE_AA);
+        
+    }
+
     int main(int argc, const char** argv) {
         VideoCapture capture;
         Mat frame;
@@ -84,6 +95,7 @@
         CascadeClassifier cascade;
         double scale;
         char key = 0;
+        int score = 0;
 
          // Iniciar a thread para tocar música
         //std::thread musicThread(playMusic);
@@ -184,6 +196,8 @@
             }
 
             if (tryflip) cv::flip(frame, frame, 1);
+
+            drawScore(frame, score);
 
             // Verifica se deve criar uma nova cadeira
             auto currentTime = chrono::steady_clock::now();
@@ -286,7 +300,8 @@
                     drawImage(frame, datenaImage, datenaX, datenaY); // Desenha a imagem do Datena
 
                     // Desenhar a mensagem sobre a imagem do Datena
-                    putText(frame, "CADEIRADA DO DATENA", Point(170, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); // Mensagem
+                    putText(frame, "CADEIRADA DO DATENA", Point(170, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); //Mensagem
+                    score += 1;
 
                     imshow(wName, frame);
                     waitKey(3000); // Espera 3 segundos para mostrar a mensagem
