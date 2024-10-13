@@ -209,7 +209,8 @@
                 FallingObject obj;
                 obj.x = rand() % (640 - objectImage.cols); // Posição X aleatória
                 obj.y = 0; // Posição Y fixa em 0
-                obj.speed = rand() % 5 + 2; // Velocidade aleatória
+                //obj.speed = rand() % 5 + 2; // Velocidade aleatória
+                obj.speed = 3;
                 obj.image = objectImage.clone();
                 fallingObjects.push_back(obj);
                 cadeirasCriadas++; // Incrementa o contador
@@ -221,7 +222,8 @@
                 FallingObject objM;
                 objM.x = rand() % (640 - mImage.cols); // Posição X aleatória
                 objM.y = 0; // Posição Y fixa em 0
-                objM.speed = rand() % 5 + 2; // Velocidade aleatória
+                //objM.speed = rand() % 5 + 2; // Velocidade aleatória
+                objM.speed = 3;
                 objM.image = mImage.clone();
                 fallingObjectsM.push_back(objM); // Adiciona o objeto 'm.png'
                 lastCreationTime = currentTime; // Atualiza o tempo da última criação
@@ -233,7 +235,8 @@
                 if (obj.y > frame.rows) { // Reinicia o objeto se sair da tela
                     obj.x = rand() % (640 - obj.image.cols); // Nova posição X aleatória
                     obj.y = 0; // Mantém a posição Y em 0
-                    obj.speed = rand() % 5 + 2; // Nova velocidade
+                    //obj.speed = rand() % 5 + 2; // Nova velocidade
+                    obj.speed = 4; 
                 }
                 drawImage(frame, obj.image, obj.x, obj.y);
             }
