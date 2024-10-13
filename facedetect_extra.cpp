@@ -78,13 +78,15 @@
     }
 
     void drawScore(Mat& img, int score) {
-    Point text(10, 30);
-    putText(img, "Pontuação: ", text, FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 255), 2, LINE_AA);
+    rectangle(img, Point(5, 2), Point(235, 40), Scalar(255, 0, 150), FILLED); // -1 ou FILLED para preencher
+    rectangle(img, Point(5, 45), Point(185, 83), Scalar(255, 0, 150), FILLED); // -1 ou FILLED para preencher    
+    Point text(10, 73);
+    putText(img, "Pontos: ", text, FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2, LINE_AA);
 
     std::string scoreText = std::to_string(score);
-        
-    Point number(10, 60);
-    putText(img, scoreText, number, FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 255), 2, LINE_AA);
+ 
+    Point number(140, 73);
+    putText(img, scoreText, number, FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2, LINE_AA);
         
     }
 
@@ -97,7 +99,7 @@
         char key = 0;
         int score = 0;
 
-         // Iniciar a thread para tocar música
+        // Iniciar a thread para tocar música
         //std::thread musicThread(playMusic);
 
         // Defina um máximo de objetos 'm.png'
