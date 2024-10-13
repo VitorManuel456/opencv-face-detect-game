@@ -79,7 +79,7 @@
 
     void drawScore(Mat& img, int score) {
     rectangle(img, Point(5, 2), Point(235, 40), Scalar(255, 0, 150), FILLED); // -1 ou FILLED para preencher
-    rectangle(img, Point(5, 45), Point(185, 83), Scalar(255, 0, 150), FILLED); // -1 ou FILLED para preencher    
+    rectangle(img, Point(5, 45), Point(210, 83), Scalar(255, 0, 150), FILLED); // -1 ou FILLED para preencher    
     Point text(10, 73);
     putText(img, "Pontos: ", text, FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2, LINE_AA);
 
@@ -103,7 +103,7 @@
         //std::thread musicThread(playMusic);
 
         // Defina um máximo de objetos 'm.png'
-        const int maxMObjects = 2; // Máximo de objetos 'm.png' na tela
+        const int maxMObjects = 4; // Máximo de objetos 'm.png' na tela
 
         // Aumente o tempo entre a criação dos objetos 'm.png'
         int tempoEntreM = 3000; // 3000 milissegundos (3 segundos) entre a aparição dos objetos 'm.png'
@@ -136,6 +136,7 @@
             cout << "ERROR: Could not load image: cadeira.png" << endl;
             return -1;
         }
+        
         //Executa a musica
         system("mplayer musicadojogo.ogg &");
 
@@ -163,7 +164,7 @@
         auto startTime = chrono::steady_clock::now();
 
         // Variáveis para controle da criação de cadeiras
-        const int maxCadeiras = 5; // Máximo de cadeiras
+        const int maxCadeiras = 3; // Máximo de cadeiras
         int cadeirasCriadas = 0; // Contador de cadeiras
         auto lastCreationTime = chrono::steady_clock::now(); // Marca o tempo da última criação
         int tempoEntreCadeiras = 1000; // Tempo em milissegundos entre a aparição das cadeiras
@@ -287,6 +288,8 @@
                     // Desenhar a mensagem sobre a imagem do Datena
                     putText(frame, "CADEIRADA DO DATENA", Point(150, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); // Mensagem
                     
+                    system("killall mplayer"); // Para a música ao fechar a janela
+
                     waitKey(3000); // Espera 3 segundos para mostrar a mensagem
                     return 0; // Encerra o programa
                 }
@@ -297,19 +300,10 @@
                 if (checkCollision(faceX - pabloImage.cols / 2, pabloY, pabloImage.cols, pabloImage.rows, 
                                 objM.x, objM.y, objM.image.cols, objM.image.rows)) {
                     // Ação de colisão com 'm.png'
-                    int datenaX = (frame.cols - datenaImage.cols) / 2; // Centraliza a imagem do Datena na tela
-                    int datenaY = 350; // Ajuste a posição Y conforme necessário
-                    drawImage(frame, datenaImage, datenaX, datenaY); // Desenha a imagem do Datena
 
-                    // Desenhar a mensagem sobre a imagem do Datena
-                    putText(frame, "CADEIRADA DO DATENA", Point(170, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); //Mensagem
                     score += 1;
-
-                    imshow(wName, frame);
-                    waitKey(3000); // Espera 3 segundos para mostrar a mensagem
-                    return 0; // Encerra o programa
-            }
                 }
+            }
 
             // Mostra o frame na tela
             imshow(wName, frame);
@@ -331,8 +325,8 @@
 
                 // Finaliza a thread de música antes de sair
                 //musicThread.join();
-
-                return 0;
+            
+            return 0;
     }
 
     // Função para desenhar a imagem sobre o frame
@@ -366,6 +360,7 @@
         std::cerr << "Não foi possível carregar a música!" << std::endl;
         return;
     }
+
     music.setVolume(50); // Ajusta o volume (0-100)
     music.play(); // Inicia a música
 
@@ -388,7 +383,7 @@
 
         for (const auto& r : faces) {
             int areaFace = r.width * r.height; // Calcula a área da face
-            if (areaFace < 4000){
+            if (areaFace < 30000){
                 continue; // Impede que faces pequenas (mais distantes da tela) sejam detectadas para não poluir o jogo
             }
             faceX = cvRound(r.x * scale + r.width * 0.5); // Atualiza a posição X do rosto
@@ -412,3 +407,4 @@
     bool checkCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
         return (x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2);
     }
+    
