@@ -7,12 +7,67 @@
     #include <random>
     #include <iomanip>
     #include <chrono>
-    //#include <SFML/Audio.hpp>
     #include <thread>
+    #include <fstream>
 
     using namespace std;
     using namespace cv;
 
+    class Pontuacao {
+    private:
+        string nome;
+        int pontos;
+    public:
+        Pontuacao(string nome, int pontos);
+        Pontuacao();
+        string textFiles();
+    };
+
+    // Construtores
+    Pontuacao::Pontuacao() {}
+
+    Pontuacao::Pontuacao(string nome, int pontos) {
+        this->nome = nome;
+        this->pontos = pontos;
+    }
+
+    // Função que imprime a pontuação
+    string Pontuacao::textFiles() {
+        return this->nome + ";" + std::to_string(this->pontos);
+    }
+
+
+    class Files {
+        private:
+            vector<Pontuacao> pontuacao;
+        public:
+            Files();
+            void addPontos(string nome, int pontos);
+            void savePointsFiles();
+    };
+
+    
+    Files::Files() {
+
+    }
+
+    // Construtor da classe Files
+    void Files::addPontos(string nome, int pontos) {
+        Pontuacao ponto = Pontuacao(nome, pontos);
+        this->pontuacao.push_back(ponto);
+    }
+    
+    void Files::savePointsFiles() {
+        ofstream arquivo("pontuacao.txt");
+        if(arquivo.is_open()) {
+            for(int i = 0; i < pontuacao.size(); i++) {
+                arquivo << this->pontuacao[i].textFiles() << endl;
+            }
+            arquivo.close();
+        } else {
+            cout << "Erro ao abrir o arquivo" << endl;
+        }
+    }
     // Declarações de funções
     void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryflip, int& faceX);
     void drawImage(Mat frame, Mat img, int xPos, int yPos);
@@ -98,10 +153,8 @@
         double scale;
         char key = 0;
         int score = 0;
-
-        // Iniciar a thread para tocar música
-        //std::thread musicThread(playMusic);
-
+        Files pontuaco;
+        
         // Defina um máximo de objetos 'm.png'
         const int maxMObjects = 4; // Máximo de objetos 'm.png' na tela
 
@@ -255,7 +308,13 @@
             chrono::duration<double> elapsedSeconds = currentTime2 - startTime;
 
             if (elapsedSeconds.count() >= 1.0) { // A cada segundo
-                countdownTime--;
+                if (countdownTime > 0) {  // Apenas decrementa se countdownTime for maior que 0
+                    countdownTime--;
+                }
+                if(countdownTime == 0) {
+                    system("killall mplayer"); // Para a música ao fechar a janela
+                    return 0;
+                }
                 startTime = currentTime2; // Reinicia o temporizador
             }
 
@@ -267,7 +326,8 @@
 
             // Formata o texto do cronômetro
             string timerText = format("Tempo: %02d:%02d", minutes, seconds);
-            putText(frame, timerText, Point(10, 30), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2); // Desenha o cronômetro
+            putText(frame, timerText, Point(10, 30), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255), 2);
+
 
             // Chama a função de detecção e desenho, passando a posição X do rosto
             detectAndDraw(frame, cascade, scale, tryflip, faceX);
@@ -287,7 +347,8 @@
 
                     // Desenhar a mensagem sobre a imagem do Datena
                     putText(frame, "CADEIRADA DO DATENA", Point(150, 300), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 3); // Mensagem
-                    
+                    pontuaco.addPontos(inputText, score);
+                    pontuaco.savePointsFiles();
                     system("killall mplayer"); // Para a música ao fechar a janela
 
                     waitKey(3000); // Espera 3 segundos para mostrar a mensagem
@@ -322,9 +383,6 @@
                 cv::imshow("Janela", image);
                 if (cv::waitKey(30) >= 0) break; // Sai ao pressionar qualquer tecla
                 }
-
-                // Finaliza a thread de música antes de sair
-                //musicThread.join();
             
             return 0;
     }
@@ -352,23 +410,6 @@
             }
         }
     }
-
-    /*void playMusic() {
-    // Carregar a música
-    sf::Music music;
-    if (!music.openFromFile("musicadojogo.ogg")) {
-        std::cerr << "Não foi possível carregar a música!" << std::endl;
-        return;
-    }
-
-    music.setVolume(50); // Ajusta o volume (0-100)
-    music.play(); // Inicia a música
-
-    // Manter a thread viva enquanto a música toca
-    while (music.getStatus() == sf::Music::Playing) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Espera para não sobrecarregar a CPU
-    }
-    }*/
 
     // Função de detecção de faces
     void detectAndDraw(Mat& img, CascadeClassifier& cascade, double scale, bool tryflip, int& faceX) {
